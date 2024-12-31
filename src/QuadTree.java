@@ -1,17 +1,30 @@
 public class QuadTree {
 
     private Node root ;
-
+    private int[][] image;
 
     // Constructor,Bulids the QuadTree recursibley
-    public QuadTree(int [][] image){
+    public QuadTree(int[][] image) {
+        this.image = image;
         root = buildTree(image, 0, 0, image.length, image[0].length);
     }
+
     private Node buildTree(int[][] image, int xStart, int yStart, int width, int height) {
-        // اگر ابعاد ناحیه 1x1 باشد، برگ ایجاد می‌کنیم
+        // اگر ابعاد ناحیه ۱x۱ باشد، برگ ایجاد می‌کنیم
         if (width == 1 && height == 1) {
             int[][] data = new int[1][1];
             data[0][0] = image[yStart][xStart];
+            return new Node(data);
+        }
+
+        // بررسی یکنواختی رنگ در زیرفضا
+        if (isUniformColor(image, xStart, yStart, width, height)) {
+            int[][] data = new int[height][width];
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    data[i][j] = image[yStart + i][xStart + j];
+                }
+            }
             return new Node(data);
         }
 
@@ -25,6 +38,20 @@ public class QuadTree {
         Node bottomRight = buildTree(image, midX, midY, width / 2, height / 2);
 
         return new Node(topLeft, topRight, bottomLeft, bottomRight);
+    }
+
+    private boolean isUniformColor(int[][] image, int xStart, int yStart, int width, int height) {
+        int color = image[yStart][xStart]; // رنگ اولین پیکسل زیرفضا
+
+        for (int i = yStart; i < yStart + height; i++) {
+            for (int j = xStart; j < xStart + width; j++) {
+                if (image[i][j] != color) {
+                    return false; // اگر هر پیکسلی متفاوت باشد، ناحیه یکنواخت نیست
+                }
+            }
+        }
+
+        return true; // همه پیکسل‌ها یکنواخت هستند
     }
 
     // Returns the Depth of the tree
@@ -41,19 +68,41 @@ public class QuadTree {
 
     // Returns the Depth of the pixel in the QuadTree
     public int pixelDepth(int px, int py) {
-        return findPixelDepth(root, px, py, 0);
+        if (root == null) {
+            throw new IllegalStateException("QuadTree is not initialized properly.");
+        }
+        return findPixelDepth(root, px, py, 0, 0, image[0].length, image.length, 0);
     }
-    private int findPixelDepth(Node node, int px, int py, int depth) {
-        if (node.isLeaf) return depth;
 
-        // بر اساس مکان پیکسل، به فرزند مناسب می‌رویم
-        int midX = node.topLeft.data[0].length / 2;
-        int midY = node.topLeft.data.length / 2;
+    private int findPixelDepth(Node node, int px, int py, int xStart, int yStart, int width, int height, int depth) {
+        // بررسی اینکه گره تهی یا برگ باشد
+        if (node == null) {
+            throw new IllegalArgumentException("Node is null");
+        }
+        if (node.isLeaf) {
+            return depth;
+        }
 
-        if (px < midX && py < midY) return findPixelDepth(node.topLeft, px, py, depth + 1);
-        if (px >= midX && py < midY) return findPixelDepth(node.topRight, px, py, depth + 1);
-        if (px < midX && py >= midY) return findPixelDepth(node.bottomLeft, px, py, depth + 1);
-        return findPixelDepth(node.bottomRight, px, py, depth + 1);
+        // محاسبه نقاط میانی
+        int midX = xStart + width / 2;
+        int midY = yStart + height / 2;
+
+        // بررسی اینکه پیکسل در کدام زیرفضا قرار دارد
+        if (px < midX && py < midY && node.topLeft != null) {
+            return findPixelDepth(node.topLeft, px, py, xStart, yStart, width / 2, height / 2, depth + 1);
+        }
+        if (px >= midX && py < midY && node.topRight != null) {
+            return findPixelDepth(node.topRight, px, py, midX, yStart, width / 2, height / 2, depth + 1);
+        }
+        if (px < midX && py >= midY && node.bottomLeft != null) {
+            return findPixelDepth(node.bottomLeft, px, py, xStart, midY, width / 2, height / 2, depth + 1);
+        }
+        if (node.bottomRight != null) {
+            return findPixelDepth(node.bottomRight, px, py, midX, midY, width / 2, height / 2, depth + 1);
+        }
+
+        // اگر هیچ شرطی برقرار نشود
+        throw new IllegalStateException("Pixel coordinates do not match any subtree");
     }
 
     // Returns the subspaces that overlap with a rectangle
