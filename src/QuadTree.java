@@ -213,8 +213,63 @@ public class QuadTree {
 
 
     // Masks subspaces that overlap with a rectangle
-    public int[][] mask (int x1 , int y1 , int x2 , int y2 ){
-        return null;
+    // Masks subspaces that overlap with a rectangle
+    public int[][] mask(int x1, int y1, int x2, int y2) {
+        // ایجاد یک تصویر جدید و پر کردن آن با پیکسل‌های سفید
+        int[][] resultImage = new int[image.length][image[0].length];
+        for (int i = 0; i < resultImage.length; i++) {
+            for (int j = 0; j < resultImage[i].length; j++) {
+                resultImage[i][j] = 255;  // رنگ سفید برای پیکسل‌ها
+            }
+        }
+
+        // شروع جستجو از ریشه QuadTree
+        maskRange(root, x1, y1, x2, y2, resultImage);
+
+        return resultImage; // برگرداندن تصویر نهایی
+    }
+
+    private void maskRange(Node node, int x1, int y1, int x2, int y2, int[][] resultImage) {
+        if (node == null) return;  // اگر گره نال باشد، ادامه نمی‌دهیم
+
+        // اگر گره برگ باشد
+        if (node.isLeaf) {
+            int nodeWidth = node.data[0].length;
+            int nodeHeight = node.data.length;
+
+            // بررسی اینکه آیا این گره با محدوده انتخابی تداخل دارد
+            for (int i = 0; i < nodeHeight; i++) {
+                for (int j = 0; j < nodeWidth; j++) {
+                    // بررسی اینکه آیا این پیکسل در محدوده انتخابی است
+                    if (x1 <= j && j < x2 && y1 <= i && i < y2) {
+                        // ماسک کردن این پیکسل به رنگ سیاه
+                        resultImage[y1 + i][x1 + j] = 0; // رنگ سیاه
+                    }
+                }
+            }
+            return;  // پس از پردازش گره برگ، از تابع خارج می‌شویم
+        }
+
+        // اگر گره داخلی باشد، بررسی فرزندان آن
+        int midX = (x1 + x2) / 2;
+        int midY = (y1 + y2) / 2;
+
+        // بررسی تداخل با هر یک از فرزندان
+        if (node.topLeft != null && isOverlap(x1, y1, x2, y2, x1, y1, midX, midY)) {
+            maskRange(node.topLeft, x1, y1, x2, y2, resultImage);
+        }
+
+        if (node.topRight != null && isOverlap(x1, y1, x2, y2, midX, y1, x2, midY)) {
+            maskRange(node.topRight, x1, y1, x2, y2, resultImage);
+        }
+
+        if (node.bottomLeft != null && isOverlap(x1, y1, x2, y2, x1, midY, midX, y2)) {
+            maskRange(node.bottomLeft, x1, y1, x2, y2, resultImage);
+        }
+
+        if (node.bottomRight != null && isOverlap(x1, y1, x2, y2, midX, midY, x2, y2)) {
+            maskRange(node.bottomRight, x1, y1, x2, y2, resultImage);
+        }
     }
 
     // Method to convert the QuadTree to an int[][] array

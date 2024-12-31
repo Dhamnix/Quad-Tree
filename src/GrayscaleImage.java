@@ -69,7 +69,7 @@ public class GrayscaleImage {
     }
 
     public static void main(String[] args) {
-        String filePath = "path/to/your/image1_gray.csv"; // Update with your file path
+        String filePath = "image1_gray.csv"; // Update with your file path
         int[][] grayscaleImage = readGrayscaleCSV(filePath);
 
         if (grayscaleImage != null) {
