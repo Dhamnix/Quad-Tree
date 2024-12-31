@@ -106,82 +106,117 @@ public class QuadTree {
     }
 
     // Returns the subspaces that overlap with a rectangle
-    public void searchSubspaceWithRange(int x1, int y1, int x2, int y2) {
+    public void searchSubspacesWithRange(int x1, int y1, int x2, int y2) {
+        // محاسبه ابعاد تصویر نهایی (محدوده انتخابی)
         int width = x2 - x1;
         int height = y2 - y1;
 
-        // Initialize result image with white pixels
+        // ایجاد تصویر جدید و پر کردن آن با پیکسل‌های سفید
         int[][] resultImage = new int[height][width];
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                resultImage[i][j] = 255;  // white
+                resultImage[i][j] = 255;  // رنگ سفید برای پیکسل‌ها
             }
         }
 
-        // Start searching from the root
+        // شروع جستجو از ریشه QuadTree
         searchRange(root, x1, y1, x2, y2, resultImage);
 
-        // Save the result image
+        // ذخیره کردن تصویر نهایی
         String outPath = "C:/Users/User/Desktop/Dataset/grayscale_image_searchRange.png";
         GrayscaleImage.generateImage(resultImage, outPath);
     }
 
     private void searchRange(Node node, int x1, int y1, int x2, int y2, int[][] resultImage) {
-        if (node == null) return; // Skip null nodes
+        if (node == null) return;  // اگر گره نال باشد، ادامه نمی‌دهیم
 
-        // If the node is a leaf, process its data
+        // اگر گره برگ باشد
         if (node.isLeaf) {
             int nodeWidth = node.data[0].length;
             int nodeHeight = node.data.length;
 
-            // Add data to the result image if it overlaps with the search range
+            // بررسی اینکه آیا این گره با محدوده انتخابی تداخل دارد
             for (int i = 0; i < nodeHeight; i++) {
                 for (int j = 0; j < nodeWidth; j++) {
-                    // Check if the pixel is within the search range
+                    // بررسی اینکه آیا این پیکسل در محدوده انتخابی است
                     if (x1 <= j && j < x2 && y1 <= i && i < y2) {
+                        // اضافه کردن داده‌های این گره به تصویر نهایی
                         resultImage[i - y1][j - x1] = node.data[i][j];
                     }
                 }
             }
-            return; // Exit once a leaf node is processed
+            return;  // پس از پردازش گره برگ، از تابع خارج می‌شویم
         }
 
-        // If the node is not a leaf, recursively check its children (if they exist)
-        // We don't need to access node.data for non-leaf nodes.
-
-        if ((node.topLeft.data == null)||(node.topLeft != null && isOverlap(x1, y1, x2, y2, 0, 0, node.topLeft.data[0].length, node.topLeft.data.length))) {
+        // اگر گره داخلی باشد، بررسی فرزندان آن
+        if (node.topLeft != null && isOverlap(x1, y1, x2, y2, 0, 0, node.topLeft.data != null ? node.topLeft.data[0].length : 0, node.topLeft.data != null ? node.topLeft.data.length : 0)) {
             searchRange(node.topLeft, x1, y1, x2, y2, resultImage);
         }
 
-        if ((node.topRight.data == null)||(node.topRight != null && isOverlap(x1, y1, x2, y2, 0, 0, node.topRight.data[0].length, node.topRight.data.length))) {
+        if (node.topRight != null && isOverlap(x1, y1, x2, y2, 0, 0, node.topRight.data != null ? node.topRight.data[0].length : 0, node.topRight.data != null ? node.topRight.data.length : 0)) {
             searchRange(node.topRight, x1, y1, x2, y2, resultImage);
         }
 
-        if ((node.bottomLeft.data == null)||(node.bottomLeft != null && isOverlap(x1, y1, x2, y2, 0, 0, node.bottomLeft.data[0].length, node.bottomLeft.data.length))) {
+        if (node.bottomLeft != null && isOverlap(x1, y1, x2, y2, 0, 0, node.bottomLeft.data != null ? node.bottomLeft.data[0].length : 0, node.bottomLeft.data != null ? node.bottomLeft.data.length : 0)) {
             searchRange(node.bottomLeft, x1, y1, x2, y2, resultImage);
         }
 
-        if ((node.bottomRight.data == null)||(node.bottomRight != null && isOverlap(x1, y1, x2, y2, 0, 0, node.bottomRight.data[0].length, node.bottomRight.data.length))) {
+        if (node.bottomRight != null && isOverlap(x1, y1, x2, y2, 0, 0, node.bottomRight.data != null ? node.bottomRight.data[0].length : 0, node.bottomRight.data != null ? node.bottomRight.data.length : 0)) {
             searchRange(node.bottomRight, x1, y1, x2, y2, resultImage);
         }
     }
 
     private boolean isOverlap(int x1, int y1, int x2, int y2, int nodeX, int nodeY, int nodeWidth, int nodeHeight) {
-        // Returns true if the search rectangle overlaps with the node's region
+        // بررسی تداخل بین محدوده انتخابی و محدوده گره
         return !(x2 <= nodeX || x1 >= nodeX + nodeWidth || y2 <= nodeY || y1 >= nodeY + nodeHeight);
     }
 
 
 
     // Compresses the image into smaller size
-    public int[][] compress (int newSize){
-        return null;
+    public int[][] compress(int newSize) {
+        int [][] data = toInt();
+        int oldWidth = data[0].length;
+        int oldHeight = data.length;
+
+        // محاسبه اندازه زیرمجموعه‌ها برای هر بخش
+        int blockSizeWidth = oldWidth / newSize;
+        int blockSizeHeight = oldHeight / newSize;
+
+        // ایجاد تصویر جدید با سایز جدید
+        int[][] compressedImage = new int[newSize][newSize];
+
+        // پیمایش هر بلوک و میانگین‌گیری
+        for (int i = 0; i < newSize; i++) {
+            for (int j = 0; j < newSize; j++) {
+                int sum = 0;
+                int pixelCount = 0;
+
+                // محاسبه میانگین پیکسل‌ها در بلوک (i, j)
+                for (int x = i * blockSizeHeight; x < (i + 1) * blockSizeHeight; x++) {
+                    for (int y = j * blockSizeWidth; y < (j + 1) * blockSizeWidth; y++) {
+                        // اطمینان از اینکه به محدوده معتبر پیکسل دسترسی داریم
+                        if (x < oldHeight && y < oldWidth) {
+                            sum += data[x][y];
+                            pixelCount++;
+                        }
+                    }
+                }
+
+                // قرار دادن میانگین در تصویر جدید
+                compressedImage[i][j] = sum / pixelCount;
+            }
+        }
+
+        return compressedImage;
     }
+
 
     // Masks subspaces that overlap with a rectangle
     public int[][] mask (int x1 , int y1 , int x2 , int y2 ){
         return null;
     }
+
     // Method to convert the QuadTree to an int[][] array
     public int[][] toInt() {
         int[][] result = new int[image.length][image[0].length]; // create the result image
