@@ -1,12 +1,13 @@
 public class Node {
-    boolean isLeaf;  // آیا برگ است؟
-    int[][] data;    // داده‌ها (در صورت برگ بودن)
-    Node topLeft, topRight, bottomLeft, bottomRight; // فرزندان
+    public boolean isLeaf;  // آیا برگ است؟
+    public int[][] data;    // داده‌ها (در صورت برگ بودن)
+    public Node topLeft, topRight, bottomLeft, bottomRight; // فرزندان
 
     // گره برگ
     Node(int[][] data) {
         this.isLeaf = true;
         this.data = data;
+        this.topLeft = this.topRight = this.bottomLeft = this.bottomRight = null;
     }
 
     // گره داخلی (غیر برگ)
@@ -16,5 +17,6 @@ public class Node {
         this.topRight = topRight;
         this.bottomLeft = bottomLeft;
         this.bottomRight = bottomRight;
+        this.data = null ;
     }
 }
