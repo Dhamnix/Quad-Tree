@@ -67,19 +67,4 @@ public class GrayscaleImage {
             System.err.println("Error saving the image: " + e.getMessage());
         }
     }
-
-    public static void main(String[] args) {
-        String filePath = "image1_gray.csv"; // Update with your file path
-        int[][] grayscaleImage = readGrayscaleCSV(filePath);
-
-        if (grayscaleImage != null) {
-            System.out.println("Grayscale image data loaded successfully.");
-            System.out.println("Image dimensions: " + grayscaleImage.length + "x" + grayscaleImage[0].length);
-
-            String outputPath = "grayscale_image.png"; // Update with your desired output path
-            generateImage(grayscaleImage, outputPath);
-        } else {
-            System.out.println("Failed to load grayscale image data.");
-        }
-    }
 }

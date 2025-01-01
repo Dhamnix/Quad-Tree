@@ -1,6 +1,7 @@
 public class Main {
     public static void main(String[] args) {
-            String filePath = "image1_gray.csv";
+          //  String filePath = "image1_gray.csv"; //mal abol
+            String filePath = "C:/Users/User/Desktop/Dataset/image1_gray.csv"; //mal agha ehsan
             int[][] grayscaleImage = GrayscaleImage.readGrayscaleCSV(filePath);
             if (grayscaleImage != null) {
                 System.out.println("Grayscale image data loaded successfully.");
@@ -10,17 +11,37 @@ public class Main {
                 System.out.println("Failed to load grayscale image data.");
             }
 
+        QuadTree tree = new QuadTree(grayscaleImage);
 
-     QuadTree tree = new QuadTree(grayscaleImage);
-     System.out.println("Tree Depth: " + tree.TreeDepth());
-     System.out.println("pixel Depth : " + tree.pixelDepth(2,2));
-        String outputPath = "grayscale_CompressImage312.png";
-          GrayscaleImage.generateImage(tree.compress(256), outputPath);
+        //tree Depth
+        System.out.println("Tree Depth: " + tree.TreeDepth());
+
+        //pixel Depth
+        System.out.println("pixel Depth : " + tree.pixelDepth(2,2));
+
+        //compress
+         /* // String outputPath = "grayscale_CompressImage312.png"; // male abol
+          String outputPath = "C:/Users/User/Desktop/Dataset/grayscale_CompressImage312.png"; //mal agha ehsan
+          GrayscaleImage.generateImage(tree.compress(256), outputPath);*/
 
 
+        int x1 = 100 ;
+        int y1 = 100 ;
+        int x2 = 300 ;
+        int y2 = 300 ;
+        //mask
+        String outputPath1 = "C:/Users/User/Desktop/Dataset/grayscale_maksed.png"; //mal agha ehsan
+        GrayscaleImage.generateImage(tree.mask(x1,y1,x2,y2),outputPath1);
+        // mask inverse
+        String outPath = "C:/Users/User/Desktop/Dataset/grayscale_image_searchRange.png";
+        GrayscaleImage.generateImage(tree.searchSubspacesWithRange(x1,y1,x2,y2), outPath);
+        // Crop
+        String outPathCrop = "C:/Users/User/Desktop/Dataset/grayscale_image_crop.png";
+        GrayscaleImage.generateImage(tree.crop(x1,y1,x2,y2), outPathCrop);
+        tree = new QuadTree(tree.crop(x1,y1,x2,y2));
 
 
-          //  String outputPath = "C:/Users/User/Desktop/Dataset/grayscale_image312.png";
-          //   GrayscaleImage.generateImage(tree.toInt(), outputPath);
+           String outputPath = "C:/Users/User/Desktop/Dataset/grayscale_image312.png";
+           GrayscaleImage.generateImage(tree.toInt(), outputPath);
     }
 }

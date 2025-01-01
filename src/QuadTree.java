@@ -105,73 +105,26 @@ public class QuadTree {
         throw new IllegalStateException("Pixel coordinates do not match any subtree");
     }
 
-    // Returns the subspaces that overlap with a rectangle
-    public void searchSubspacesWithRange(int x1, int y1, int x2, int y2) {
-        // محاسبه ابعاد تصویر نهایی (محدوده انتخابی)
-        int width = x2 - x1;
-        int height = y2 - y1;
+    // Masks subspaces that overlap with a rectangle and saves the result as an image
+    public int[][] searchSubspacesWithRange(int x1, int y1, int x2, int y2) {
+        // ایجاد یک آرایه جدید با ابعاد تصویر اصلی
+        int[][] resultImage = new int[image.length][image[0].length];
 
-        // ایجاد تصویر جدید و پر کردن آن با پیکسل‌های سفید
-        int[][] resultImage = new int[height][width];
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                resultImage[i][j] = 255;  // رنگ سفید برای پیکسل‌ها
+        // پر کردن کل تصویر با رنگ سفید
+        for (int i = 0; i < resultImage.length; i++) {
+            for (int j = 0; j < resultImage[0].length; j++) {
+                resultImage[i][j] = 255; // مقدار سفید
             }
         }
 
-        // شروع جستجو از ریشه QuadTree
-        searchRange(root, x1, y1, x2, y2, resultImage);
-
-        // ذخیره کردن تصویر نهایی
-        String outPath = "C:/Users/User/Desktop/Dataset/grayscale_image_searchRange.png";
-        GrayscaleImage.generateImage(resultImage, outPath);
-    }
-
-    private void searchRange(Node node, int x1, int y1, int x2, int y2, int[][] resultImage) {
-        if (node == null) return;  // اگر گره نال باشد، ادامه نمی‌دهیم
-
-        // اگر گره برگ باشد
-        if (node.isLeaf) {
-            int nodeWidth = node.data[0].length;
-            int nodeHeight = node.data.length;
-
-            // بررسی اینکه آیا این گره با محدوده انتخابی تداخل دارد
-            for (int i = 0; i < nodeHeight; i++) {
-                for (int j = 0; j < nodeWidth; j++) {
-                    // بررسی اینکه آیا این پیکسل در محدوده انتخابی است
-                    if (x1 <= j && j < x2 && y1 <= i && i < y2) {
-                        // اضافه کردن داده‌های این گره به تصویر نهایی
-                        resultImage[i - y1][j - x1] = node.data[i][j];
-                    }
-                }
+        // پیمایش ناحیه مستطیل و کپی کردن مقادیر از تصویر اصلی
+        for (int i = y1; i < y2 && i < image.length; i++) {
+            for (int j = x1; j < x2 && j < image[0].length; j++) {
+                resultImage[i][j] = image[i][j]; // کپی مقدار اصلی
             }
-            return;  // پس از پردازش گره برگ، از تابع خارج می‌شویم
         }
-
-        // اگر گره داخلی باشد، بررسی فرزندان آن
-        if (node.topLeft != null && isOverlap(x1, y1, x2, y2, 0, 0, node.topLeft.data != null ? node.topLeft.data[0].length : 0, node.topLeft.data != null ? node.topLeft.data.length : 0)) {
-            searchRange(node.topLeft, x1, y1, x2, y2, resultImage);
-        }
-
-        if (node.topRight != null && isOverlap(x1, y1, x2, y2, 0, 0, node.topRight.data != null ? node.topRight.data[0].length : 0, node.topRight.data != null ? node.topRight.data.length : 0)) {
-            searchRange(node.topRight, x1, y1, x2, y2, resultImage);
-        }
-
-        if (node.bottomLeft != null && isOverlap(x1, y1, x2, y2, 0, 0, node.bottomLeft.data != null ? node.bottomLeft.data[0].length : 0, node.bottomLeft.data != null ? node.bottomLeft.data.length : 0)) {
-            searchRange(node.bottomLeft, x1, y1, x2, y2, resultImage);
-        }
-
-        if (node.bottomRight != null && isOverlap(x1, y1, x2, y2, 0, 0, node.bottomRight.data != null ? node.bottomRight.data[0].length : 0, node.bottomRight.data != null ? node.bottomRight.data.length : 0)) {
-            searchRange(node.bottomRight, x1, y1, x2, y2, resultImage);
-        }
+       return resultImage;
     }
-
-    private boolean isOverlap(int x1, int y1, int x2, int y2, int nodeX, int nodeY, int nodeWidth, int nodeHeight) {
-        // بررسی تداخل بین محدوده انتخابی و محدوده گره
-        return !(x2 <= nodeX || x1 >= nodeX + nodeWidth || y2 <= nodeY || y1 >= nodeY + nodeHeight);
-    }
-
-
 
     // Compresses the image into smaller size
     public int[][] compress(int newSize) {
@@ -211,65 +164,26 @@ public class QuadTree {
         return compressedImage;
     }
 
-
-    // Masks subspaces that overlap with a rectangle
     // Masks subspaces that overlap with a rectangle
     public int[][] mask(int x1, int y1, int x2, int y2) {
-        // ایجاد یک تصویر جدید و پر کردن آن با پیکسل‌های سفید
+        // ایجاد یک آرایه جدید با ابعاد تصویر اصلی
         int[][] resultImage = new int[image.length][image[0].length];
+
+        // پر کردن کل تصویر با رنگ مشکی
         for (int i = 0; i < resultImage.length; i++) {
-            for (int j = 0; j < resultImage[i].length; j++) {
-                resultImage[i][j] = 255;  // رنگ سفید برای پیکسل‌ها
+            for (int j = 0; j < resultImage[0].length; j++) {
+                resultImage[i][j] = 0; // مقدار مشکی
             }
         }
 
-        // شروع جستجو از ریشه QuadTree
-        maskRange(root, x1, y1, x2, y2, resultImage);
-
-        return resultImage; // برگرداندن تصویر نهایی
-    }
-
-    private void maskRange(Node node, int x1, int y1, int x2, int y2, int[][] resultImage) {
-        if (node == null) return;  // اگر گره نال باشد، ادامه نمی‌دهیم
-
-        // اگر گره برگ باشد
-        if (node.isLeaf) {
-            int nodeWidth = node.data[0].length;
-            int nodeHeight = node.data.length;
-
-            // بررسی اینکه آیا این گره با محدوده انتخابی تداخل دارد
-            for (int i = 0; i < nodeHeight; i++) {
-                for (int j = 0; j < nodeWidth; j++) {
-                    // بررسی اینکه آیا این پیکسل در محدوده انتخابی است
-                    if (x1 <= j && j < x2 && y1 <= i && i < y2) {
-                        // ماسک کردن این پیکسل به رنگ سیاه
-                        resultImage[y1 + i][x1 + j] = 0; // رنگ سیاه
-                    }
-                }
+        // پیمایش ناحیه مستطیل و کپی کردن مقادیر از تصویر اصلی
+        for (int i = y1; i < y2 && i < image.length; i++) {
+            for (int j = x1; j < x2 && j < image[0].length; j++) {
+                resultImage[i][j] = image[i][j]; // کپی مقدار اصلی
             }
-            return;  // پس از پردازش گره برگ، از تابع خارج می‌شویم
         }
 
-        // اگر گره داخلی باشد، بررسی فرزندان آن
-        int midX = (x1 + x2) / 2;
-        int midY = (y1 + y2) / 2;
-
-        // بررسی تداخل با هر یک از فرزندان
-        if (node.topLeft != null && isOverlap(x1, y1, x2, y2, x1, y1, midX, midY)) {
-            maskRange(node.topLeft, x1, y1, x2, y2, resultImage);
-        }
-
-        if (node.topRight != null && isOverlap(x1, y1, x2, y2, midX, y1, x2, midY)) {
-            maskRange(node.topRight, x1, y1, x2, y2, resultImage);
-        }
-
-        if (node.bottomLeft != null && isOverlap(x1, y1, x2, y2, x1, midY, midX, y2)) {
-            maskRange(node.bottomLeft, x1, y1, x2, y2, resultImage);
-        }
-
-        if (node.bottomRight != null && isOverlap(x1, y1, x2, y2, midX, midY, x2, y2)) {
-            maskRange(node.bottomRight, x1, y1, x2, y2, resultImage);
-        }
+        return resultImage; // بازگشت تصویر نهایی
     }
 
     // Method to convert the QuadTree to an int[][] array
@@ -312,6 +226,28 @@ public class QuadTree {
                 fillImageFromQuadTree(node.bottomRight, result, midX, midY, width / 2, height / 2);
             }
         }
+    }
+
+    public int[][] crop(int xStart, int yStart, int xEnd, int yEnd) {
+        // اطمینان از اینکه مختصات ورودی معتبر باشند
+        if (xStart < 0 || yStart < 0 || xEnd > image[0].length || yEnd > image.length || xStart >= xEnd || yStart >= yEnd) {
+            throw new IllegalArgumentException("Invalid crop coordinates");
+        }
+
+        // ایجاد آرایه جدید برای ذخیره بخش برش داده شده
+        int croppedWidth = xEnd - xStart;
+        int croppedHeight = yEnd - yStart;
+        int[][] croppedImage = new int[croppedHeight][croppedWidth];
+
+        // کپی کردن مقادیر از تصویر اصلی به آرایه جدید
+        for (int i = 0; i < croppedHeight; i++) {
+            for (int j = 0; j < croppedWidth; j++) {
+                croppedImage[i][j] = image[yStart + i][xStart + j];
+            }
+        }
+
+        // بازگشت تصویر کراپ شده
+        return croppedImage;
     }
 
 }
