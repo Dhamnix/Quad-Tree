@@ -128,7 +128,7 @@ public class QuadTree {
 
         return resultImage;
     }
-    
+
     // Masks subspaces that overlap with a rectangle
     public int[][] mask(int x1, int y1, int x2, int y2) {
         // Create a new result image, initially filled with white (255)
