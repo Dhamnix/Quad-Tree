@@ -105,6 +105,7 @@ public class QuadTree {
         throw new IllegalStateException("Pixel coordinates do not match any subtree");
     }
 
+    // Returns the subspaces that overlap with a rectangle
     public int[][] searchSubspacesWithRange(int x1, int y1, int x2, int y2) {
         // Create a new result image, initially filled with white (255)
         int[][] resultImage = new int[image.length][image[0].length];
@@ -127,7 +128,8 @@ public class QuadTree {
 
         return resultImage;
     }
-
+    
+    // Masks subspaces that overlap with a rectangle
     public int[][] mask(int x1, int y1, int x2, int y2) {
         // Create a new result image, initially filled with white (255)
         int[][] resultImage = new int[image.length][image[0].length];
@@ -216,9 +218,6 @@ public class QuadTree {
         }
     }
 
-
-
-
     // Compresses the image into smaller size
     public int[][] compress(int newSize) {
         int [][] data = toInt();
@@ -257,7 +256,7 @@ public class QuadTree {
         return compressedImage;
     }
 
-    // Masks
+    // Masks Photoshop
     public int[][] maskPhotoshop(int x1, int y1, int x2, int y2) {
         // ایجاد یک آرایه جدید با ابعاد تصویر اصلی
         int[][] resultImage = new int[image.length][image[0].length];
