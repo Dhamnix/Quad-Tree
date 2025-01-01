@@ -25,12 +25,22 @@ public class Main {
           GrayscaleImage.generateImage(tree.compress(256), outputPath);*/
 
 
-        int x1 = 100 ;
-        int y1 = 100 ;
-        int x2 = 300 ;
-        int y2 = 300 ;
-        //mask
-        String outputPath1 = "C:/Users/User/Desktop/Dataset/grayscale_maksed.png"; //mal agha ehsan
+        int x1 = 0 ;
+        int y1 = 0 ;
+        int x2 = 500 ;
+        int y2 = 500 ;
+
+        String outPath = "C:/Users/User/Desktop/Dataset/grayscale_image_searchRange.png";
+        GrayscaleImage.generateImage(tree.searchSubspacesWithRange(x1,y1,x2,y2), outPath);
+
+        String outputPath1 = "C:/Users/User/Desktop/Dataset/grayscale_maskPhotoshopi.png";
+        GrayscaleImage.generateImage(tree.maskPhotoshopInverse(x1,y1,x2,y2),outputPath1);
+
+        String outputPath2 = "C:/Users/User/Desktop/Dataset/grayscale_maksed.png";
+        GrayscaleImage.generateImage(tree.mask(x1,y1,x2,y2),outputPath2);
+
+     /*   //mask
+        String outputPath1 = "C:/Users/User/Desktop/Dataset/grayscale_maksed.png";
         GrayscaleImage.generateImage(tree.mask(x1,y1,x2,y2),outputPath1);
         // mask inverse
         String outPath = "C:/Users/User/Desktop/Dataset/grayscale_image_searchRange.png";
@@ -42,6 +52,6 @@ public class Main {
 
 
            String outputPath = "C:/Users/User/Desktop/Dataset/grayscale_image312.png";
-           GrayscaleImage.generateImage(tree.toInt(), outputPath);
+           GrayscaleImage.generateImage(tree.toInt(), outputPath);*/
     }
 }

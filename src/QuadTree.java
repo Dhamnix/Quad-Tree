@@ -105,26 +105,119 @@ public class QuadTree {
         throw new IllegalStateException("Pixel coordinates do not match any subtree");
     }
 
-    // Masks subspaces that overlap with a rectangle and saves the result as an image
     public int[][] searchSubspacesWithRange(int x1, int y1, int x2, int y2) {
-        // ایجاد یک آرایه جدید با ابعاد تصویر اصلی
+        // Create a new result image, initially filled with white (255)
         int[][] resultImage = new int[image.length][image[0].length];
-
-        // پر کردن کل تصویر با رنگ سفید
         for (int i = 0; i < resultImage.length; i++) {
             for (int j = 0; j < resultImage[0].length; j++) {
-                resultImage[i][j] = 255; // مقدار سفید
+                resultImage[i][j] = 255; // white
             }
         }
 
-        // پیمایش ناحیه مستطیل و کپی کردن مقادیر از تصویر اصلی
+        // Iterate over the borders of the rectangle (first and last rows and columns)
         for (int i = y1; i < y2 && i < image.length; i++) {
             for (int j = x1; j < x2 && j < image[0].length; j++) {
-                resultImage[i][j] = image[i][j]; // کپی مقدار اصلی
+                // Check if the pixel is in a leaf node
+                if (isLeafNodeAtPosition(j, i)) {
+                    // Fill the corresponding leaf node into the result image
+                    fillLeafNodeInImage(resultImage, j, i);
+                }
             }
         }
-       return resultImage;
+
+        return resultImage;
     }
+
+    public int[][] mask(int x1, int y1, int x2, int y2) {
+        // Create a new result image, initially filled with white (255)
+        int[][] resultImage = new int[image.length][image[0].length];
+        for (int i = 0; i < resultImage.length; i++) {
+            for (int j = 0; j < resultImage[0].length; j++) {
+                resultImage[i][j] = 00; // black af
+            }
+        }
+
+        // Iterate over the borders of the rectangle (first and last rows and columns)
+        for (int i = y1; i < y2 && i < image.length; i++) {
+            for (int j = x1; j < x2 && j < image[0].length; j++) {
+                // Check if the pixel is in a leaf node
+                if (isLeafNodeAtPosition(j, i)) {
+                    // Fill the corresponding leaf node into the result image
+                    fillLeafNodeInImage(resultImage, j, i);
+                }
+            }
+        }
+
+        return resultImage;
+    }
+
+    // Check if a given pixel is part of a leaf node
+    private boolean isLeafNodeAtPosition(int x, int y) {
+        return findLeafNodeAtPosition(root, x, y, 0, 0, image[0].length, image.length);
+    }
+
+    // Recursive function to find the leaf node at a specific position
+    private boolean findLeafNodeAtPosition(Node node, int x, int y, int xStart, int yStart, int width, int height) {
+        if (node == null) return false;
+        if (node.isLeaf) {
+            // If it's a leaf node, return true
+            return true;
+        }
+
+        // Calculate mid-points to divide the area into subspaces
+        int midX = xStart + width / 2;
+        int midY = yStart + height / 2;
+
+        // Check which quadrant the pixel (x, y) belongs to
+        if (x < midX && y < midY) {
+            return findLeafNodeAtPosition(node.topLeft, x, y, xStart, yStart, width / 2, height / 2);
+        } else if (x >= midX && y < midY) {
+            return findLeafNodeAtPosition(node.topRight, x, y, midX, yStart, width / 2, height / 2);
+        } else if (x < midX && y >= midY) {
+            return findLeafNodeAtPosition(node.bottomLeft, x, y, xStart, midY, width / 2, height / 2);
+        } else {
+            return findLeafNodeAtPosition(node.bottomRight, x, y, midX, midY, width / 2, height / 2);
+        }
+    }
+
+    // Function to fill the corresponding leaf node's area in the result image
+    private void fillLeafNodeInImage(int[][] resultImage, int x, int y) {
+        fillLeafNodeInImageRecursive(root, x, y, 0, 0, image[0].length, image.length, resultImage);
+    }
+
+    // Recursive function to fill the leaf node in the result image
+    private void fillLeafNodeInImageRecursive(Node node, int x, int y, int xStart, int yStart, int width, int height, int[][] resultImage) {
+        if (node == null) return;
+
+        if (node.isLeaf) {
+            // If it's a leaf node, fill the entire area corresponding to this leaf node
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    if (xStart + j < resultImage[0].length && yStart + i < resultImage.length) {
+                        resultImage[yStart + i][xStart + j] = node.data[i][j];
+                    }
+                }
+            }
+        } else {
+            // Calculate mid-points
+            int midX = xStart + width / 2;
+            int midY = yStart + height / 2;
+
+            // Check which quadrant the pixel belongs to and recursively fill
+            if (x < midX && y < midY) {
+                fillLeafNodeInImageRecursive(node.topLeft, x, y, xStart, yStart, width / 2, height / 2, resultImage);
+            } else if (x >= midX && y < midY) {
+                fillLeafNodeInImageRecursive(node.topRight, x, y, midX, yStart, width / 2, height / 2, resultImage);
+            } else if (x < midX && y >= midY) {
+                fillLeafNodeInImageRecursive(node.bottomLeft, x, y, xStart, midY, width / 2, height / 2, resultImage);
+            } else {
+                fillLeafNodeInImageRecursive(node.bottomRight, x, y, midX, midY, width / 2, height / 2, resultImage);
+            }
+        }
+    }
+
+
+
 
     // Compresses the image into smaller size
     public int[][] compress(int newSize) {
@@ -164,8 +257,8 @@ public class QuadTree {
         return compressedImage;
     }
 
-    // Masks subspaces that overlap with a rectangle
-    public int[][] mask(int x1, int y1, int x2, int y2) {
+    // Masks
+    public int[][] maskPhotoshop(int x1, int y1, int x2, int y2) {
         // ایجاد یک آرایه جدید با ابعاد تصویر اصلی
         int[][] resultImage = new int[image.length][image[0].length];
 
@@ -184,6 +277,25 @@ public class QuadTree {
         }
 
         return resultImage; // بازگشت تصویر نهایی
+    }
+    public int[][] maskPhotoshopInverse(int x1, int y1, int x2, int y2) {
+        // ایجاد یک آرایه جدید با ابعاد تصویر اصلی
+        int[][] resultImage = new int[image.length][image[0].length];
+
+        // پر کردن کل تصویر با رنگ سفید
+        for (int i = 0; i < resultImage.length; i++) {
+            for (int j = 0; j < resultImage[0].length; j++) {
+                resultImage[i][j] = 255; // مقدار سفید
+            }
+        }
+
+        // پیمایش ناحیه مستطیل و کپی کردن مقادیر از تصویر اصلی
+        for (int i = y1; i < y2 && i < image.length; i++) {
+            for (int j = x1; j < x2 && j < image[0].length; j++) {
+                resultImage[i][j] = image[i][j]; // کپی مقدار اصلی
+            }
+        }
+        return resultImage;
     }
 
     // Method to convert the QuadTree to an int[][] array
@@ -227,7 +339,7 @@ public class QuadTree {
             }
         }
     }
-
+    //Crop
     public int[][] crop(int xStart, int yStart, int xEnd, int yEnd) {
         // اطمینان از اینکه مختصات ورودی معتبر باشند
         if (xStart < 0 || yStart < 0 || xEnd > image[0].length || yEnd > image.length || xStart >= xEnd || yStart >= yEnd) {
